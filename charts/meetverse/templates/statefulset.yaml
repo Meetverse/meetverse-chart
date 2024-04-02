@@ -1,0 +1,249 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "meetverse.fullname" . }}
+  labels:
+    {{- include "meetverse.labels" . | nindent 4 }}
+{{- with .Values.qdrant.additionalLabels }}
+{{- toYaml . | nindent 4 }}
+{{- end }}
+spec:
+  replicas: {{ .Values.qdrant.replicaCount }}
+  podManagementPolicy: Parallel
+  selector:
+    matchLabels:
+      {{- include "meetverse.selectorLabels" . | nindent 6 }}
+  serviceName: qdrant
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      {{- if or .Values.apiKey .Values.readOnlyApiKey }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+      {{- end }}
+      {{- with .Values.qdrant.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "meetverse.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.qdrant.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.qdrant.priorityClassName }}
+      priorityClassName: "{{ .Values.qdrant.priorityClassName }}"
+      {{- end }}
+      initContainers:
+      {{- if .Values.qdrant.updateVolumeFsOwnership }}
+      {{- if and .Values.qdrant.containerSecurityContext .Values.qdrant.containerSecurityContext.runAsUser }}
+        - name: ensure-storage-dir-ownership
+          image: "{{ .Values.qdrant.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          command:
+            - chown
+            - -R
+            - {{ .Values.qdrant.containerSecurityContext.runAsUser }}:{{ .Values.qdrant.podSecurityContext.fsGroup }}
+            - /qdrant/storage
+          volumeMounts:
+            - name: qdrant-storage
+              mountPath: /qdrant/storage
+      {{- if .Values.qdrant.snapshotRestoration.enabled }}
+        - name: ensure-snapshots-dir-ownership
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          command:
+            - chown
+            - -R
+            - {{ .Values.qdrant.containerSecurityContext.runAsUser }}:{{ .Values.qdrant.podSecurityContext.fsGroup }}
+            - /qdrant/snapshots
+          volumeMounts:
+            - name: qdrant-snapshots
+              mountPath: /qdrant/snapshots
+      {{- end }}
+      {{- end }}
+      {{- end }}
+      containers:
+        {{- if .Values.qdrant.sidecarContainers -}}
+        {{- toYaml .Values.qdrant.sidecarContainers | trim | nindent 8 }}
+        {{- end}}
+        - name: qdrant
+          image: "{{ .Values.qdrant.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}{{ .Values.qdrant.image.useUnprivilegedImage | ternary "-unprivileged" "" }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: QDRANT_INIT_FILE_PATH
+              value: /qdrant/init/.qdrant-initialized
+          {{- range .Values.qdrant.env }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+          {{- end }}
+          command: ["/bin/bash", "-c"]
+          {{- with .Values.qdrant.args }}
+          args:
+            {{- toYaml . | nindent 10 }}
+          {{- end }}
+          ports:
+          {{- range .Values.qdrant.service.ports }}
+            - name: {{ .name }}
+              containerPort: {{ .targetPort }}
+              protocol: {{ .protocol }}
+          {{- end }}
+
+          {{- $values := .Values -}}
+          {{- range .Values.qdrant.service.ports }}
+          {{- if and $values.qdrant.livenessProbe.enabled .checksEnabled }}
+          livenessProbe:
+            {{- if eq .name "grpc"}}
+            grpc:
+              port: {{ .targetPort }}
+            {{- end }}
+            {{- if eq .name "http"}}
+            httpGet:
+              path: /
+              port: {{ .targetPort }}
+              {{- if and $values.qdrant.config.service $values.qdrant.config.service.enable_tls }}
+              scheme: HTTPS
+              {{- end }}
+            {{- end }}
+            initialDelaySeconds: {{ $values.qdrant.livenessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ $values.qdrant.livenessProbe.timeoutSeconds }}
+            periodSeconds: {{ $values.qdrant.livenessProbe.periodSeconds }}
+            successThreshold: {{ $values.qdrant.livenessProbe.successThreshold }}
+            failureThreshold: {{ $values.qdrant.livenessProbe.failureThreshold }}
+          {{- end }}
+          {{- if and $values.qdrant.readinessProbe.enabled .checksEnabled }}
+          readinessProbe:
+            {{- if eq .name "grpc"}}
+            grpc:
+              port: {{ .targetPort }}
+            {{- end }}
+            {{- if eq .name "http"}}
+            httpGet:
+              path: "{{- if semverCompare ">=1.7.3" ($.Values.image.tag | default $.Chart.AppVersion) -}}/readyz{{else}}/{{end}}"
+              port: {{ .targetPort }}
+              {{- if and $values.qdrant.config.service $values.qdrant.config.service.enable_tls }}
+              scheme: HTTPS
+              {{- end }}
+            {{- end }}
+            initialDelaySeconds: {{ $values.qdrant.readinessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ $values.qdrant.readinessProbe.timeoutSeconds }}
+            periodSeconds: {{ $values.qdrant.readinessProbe.periodSeconds }}
+            successThreshold: {{ $values.qdrant.readinessProbe.successThreshold }}
+            failureThreshold: {{ $values.qdrant.readinessProbe.failureThreshold }}
+          {{- end }}
+          {{- if and $values.qdrant.startupProbe.enabled .checksEnabled }}
+          startupProbe:
+            {{- if eq .name "grpc"}}
+            grpc:
+              port: {{ .targetPort }}
+            {{- end }}
+            {{- if eq .name "http"}}
+            httpGet:
+              path: /
+              port: {{ .targetPort }}
+              {{- if and $values.qdrant.config.service $values.qdrant.config.service.enable_tls }}
+              scheme: HTTPS
+              {{- end }}
+            {{- end }}
+            initialDelaySeconds: {{ $values.qdrant.startupProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ $values.qdrant.startupProbe.timeoutSeconds }}
+            periodSeconds: {{ $values.qdrant.startupProbe.periodSeconds }}
+            successThreshold: {{ $values.qdrant.startupProbe.successThreshold }}
+            failureThreshold: {{ $values.qdrant.startupProbe.failureThreshold }}
+          {{- end }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.qdrant.resources | nindent 12 }}
+          {{- with .Values.qdrant.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sleep", "3"]
+          volumeMounts:
+            - name: qdrant-storage
+              mountPath: /qdrant/storage
+            - name: qdrant-config
+              mountPath: /qdrant/config/initialize.sh
+              subPath: initialize.sh
+            - name: qdrant-config
+              mountPath: /qdrant/config/production.yaml
+              subPath: production.yaml
+          {{- if or .Values.apiKey .Values.readOnlyApiKey }}
+            - name: qdrant-secret
+              mountPath: /qdrant/config/local.yaml
+              subPath: local.yaml
+          {{- end }}
+            - name: qdrant-snapshots
+              mountPath: /qdrant/snapshots
+            - name: qdrant-init
+              mountPath: /qdrant/init
+          {{- if .Values.qdrant.additionalVolumeMounts }}
+{{- toYaml .Values.qdrant.additionalVolumeMounts | default "" | nindent 10 }}
+          {{- end}}
+      {{- with .Values.qdrant.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.qdrant.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.qdrant.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.qdrant.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.qdrant.topologySpreadConstraints}}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: qdrant
+      volumes:
+        - name: qdrant-config
+          configMap:
+            name: qdrant
+            defaultMode: 0755
+        {{- if .Values.qdrant.snapshotRestoration.enabled }}
+        - name: qdrant-snapshots
+          persistentVolumeClaim:
+            claimName: {{ .Values.qdrant.snapshotRestoration.pvcName }}
+        {{- else }}
+        - name: qdrant-snapshots
+          emptyDir: {}
+        {{- end }}
+        - name: qdrant-init
+          emptyDir: {}
+        {{- if or .Values.qdrant.apiKey .Values.qdrant.readOnlyApiKey }}
+        - name: qdrant-secret
+          secret:
+            secretName: qdrant-apikey
+            defaultMode: 0600
+        {{- end }}
+        {{- if .Values.qdrant.additionalVolumes }}
+{{- toYaml .Values.qdrant.additionalVolumes | default "" | nindent 8 }}
+        {{- end}}
+  volumeClaimTemplates:
+    - metadata:
+        name: qdrant-storage
+        labels:
+          app: qdrant
+        {{- with .Values.qdrant.persistence.annotations }}
+        annotations:
+        {{- toYaml . | nindent 10 }}
+        {{- end }}
+      spec:
+        storageClassName: {{ .Values.qdrant.persistence.storageClassName }}
+        accessModes:
+        {{- range .Values.qdrant.persistence.accessModes }}
+          - {{ . | quote }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.qdrant.persistence.size | quote }}

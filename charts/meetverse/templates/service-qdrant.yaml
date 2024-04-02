@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: qdrant-headless
+  labels:
+    {{- include "meetverse.labels" . | nindent 4 }}
+{{- with .Values.qdrant.service.additionalLabels }}
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- if .Values.qdrant.service.annotations }}
+  annotations:
+{{ toYaml .Values.qdrant.service.annotations | indent 4 }}
+{{- end }}
+spec:
+  type: {{ .Values.qdrant.service.type | default "ClusterIP" }}
+  {{- if .Values.qdrant.service.loadBalancerIP }}
+  loadBalancerIP: {{ .Values.qdrant.service.loadBalancerIP }}
+  {{- end }}
+  ports:
+    {{- range .Values.qdrant.service.ports }}
+    - name: {{ .name }}
+      port: {{ .port }}
+      targetPort: {{ .targetPort }}
+      protocol: {{ .protocol | default "TCP" }}
+    {{- end }}
+  selector:
+    {{- include "meetverse.selectorLabels" . | nindent 4 }}

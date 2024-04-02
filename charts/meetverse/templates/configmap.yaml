@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: qdrant
+data:
+  initialize.sh: |
+    #!/bin/sh
+    SET_INDEX=${HOSTNAME##*-}
+    {{- if and (.Values.qdrant.snapshotRestoration.enabled) (eq (.Values.replicaCount | quote)  (1 | quote)) }}
+    echo "Starting initializing for pod $SET_INDEX and snapshots restoration"
+    exec ./entrypoint.sh --uri 'http://qdrant-0.qdrant-headless:6335' {{ range .Values.qdrant.snapshotRestoration.snapshots }} --snapshot {{ . }} {{ end }}
+    {{- else }}
+    echo "Starting initializing for pod $SET_INDEX"
+    if [ "$SET_INDEX" = "0" ]; then
+      exec ./entrypoint.sh --uri 'http://qdrant-0.qdrant-headless:6335'
+    else
+      exec ./entrypoint.sh --bootstrap 'http://qdrant-0.qdrant-headless:6335' --uri 'http://qdrant-'"$SET_INDEX"'.qdrant-headless:6335'
+    fi
+    {{ end }}
+  production.yaml: |
+    {{- toYaml .Values.qdrant.config | nindent 4 }}
