@@ -4,6 +4,27 @@
 
 replicaCount: 1
 
+openAPI:
+  key: X
+
+google:
+  client_id: X
+  project: meetversetest
+  secret: X
+  redorect_urls: ["http://localhost:8000/api/oauth2callback","https://meetverse.ai/api/oauth2callback"]
+  refresh_token: X
+
+gmail:
+  client_id: X
+  client_secret: X
+  refresh_token: X
+
+datadog:
+  key: X
+  site: us5.datadoghq.com
+  trace: true
+  propagation: datadog
+
 image:
   repository: us-west1-docker.pkg.dev/meetversetest/meetverse/api
   pullPolicy: IfNotPresent
@@ -41,7 +62,7 @@ securityContext: {}
 
 service:
   type: ClusterIP
-  port: 80
+  port: 8000
 
 ingress:
   enabled: true
