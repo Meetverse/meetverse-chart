@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: us-west1-docker.pkg.dev/meetversetest/meetverse/api:latest
+  repository: us-west1-docker.pkg.dev/meetversetest/meetverse/api
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
