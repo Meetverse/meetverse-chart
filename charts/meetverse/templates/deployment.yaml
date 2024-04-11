@@ -36,6 +36,19 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: DB_NAME
+              value: "meetverse"
+            - name: PERSISTENT_SESSION
+              value: "True"
+            - name: DD_LOGS_INJECTION
+              value: "true"
+            {{- with (first .Values.ingress.hosts) }}
+            - name: URI
+              value: {{ .host }}
+            {{- end }}
+            - name: MONGODB_URI
+              value: "mongodb://{{- with (first .Values.mongodb.auth.usernames) }}{{ . }}{{- end }}:{{- with (first .Values.mongodb.auth.passwords) }}{{ . }}{{- end }}@{{ .Values.mongodb.service.nameOverride }}.{{ .Release.Namespace }}.svc"
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
