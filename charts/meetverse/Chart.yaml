@@ -27,7 +27,7 @@ appVersion: "1.16.0"
 dependencies:
   - name: qdrant
     version: 0.8.4
-    repository: https://apecloud.github.io/helm-charts
+    repository: https://qdrant.github.io/qdrant-helm
 
   - name: mongodb
     version: 15.1.2
