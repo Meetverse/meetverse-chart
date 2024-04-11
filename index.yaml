@@ -3,6 +3,23 @@ entries:
   meetverse:
   - apiVersion: v2
     appVersion: 1.16.0
+    created: "2024-04-11T15:39:42.356589254Z"
+    dependencies:
+    - name: qdrant
+      repository: https://qdrant.github.io/qdrant-helm
+      version: 0.8.4
+    - name: mongodb
+      repository: https://charts.bitnami.com/bitnami
+      version: 15.1.2
+    description: A Helm chart for Kubernetes
+    digest: 30307437e8c69b594c430581dfcff93aeaff18de44a33d70eb01b0f21bdbb69d
+    name: meetverse
+    type: application
+    urls:
+    - https://github.com/Meetverse/meetverse-chart/releases/download/meetverse-0.2.7/meetverse-0.2.7.tgz
+    version: 0.2.7
+  - apiVersion: v2
+    appVersion: 1.16.0
     created: "2024-04-11T04:08:15.628393235Z"
     dependencies:
     - name: qdrant
@@ -35,4 +52,4 @@ entries:
     urls:
     - https://github.com/Meetverse/meetverse-chart/releases/download/meetverse-0.2.5/meetverse-0.2.5.tgz
     version: 0.2.5
-generated: "2024-04-11T04:08:15.62840629Z"
+generated: "2024-04-11T15:39:42.356602448Z"
