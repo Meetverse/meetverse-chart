@@ -4,26 +4,37 @@
 
 replicaCount: 1
 
-openAI:
-  key: X
-
-google:
-  client_id: X
-  project: meetversetest
-  secret: X
-  redirect_urls: "[\"http://localhost:8000\"]"
-  refresh_token: X
-
-gmail:
-  client_id: X
-  client_secret: X
-  refresh_token: X
-
-datadog:
-  key: X
-  site: us5.datadoghq.com
-  trace: true
-  propagation: datadog
+env:
+  - name: DB_NAME
+    value: "meetverse"
+  - name: PERSISTENT_SESSION
+    value: "true"
+  - name: DD_LOGS_INJECTION
+    value: "true"
+  - name: OPENAI_KEY
+    value: X
+  - name: GOOGLE_CLIENT_ID
+    value: x
+  - name: GOOGLE_PROJECT_ID
+    value: X
+  - name: GOOGLE_CLIENT_SECRET
+    value: X
+  - name: GOOGLE_REDIRECT_URIS
+    value: X
+  - name: GMAIL_REFRESH_TOKEN
+    value: X
+  - name: GMAIL_CLIENT_ID
+    value: X
+  - name: GMAIL_CLIENT_SECRET
+    value: X
+  - name: DD_API_KEY
+    value: X
+  - name: DD_SITE
+    value: X
+  - name: DD_TRACE_ENABLED
+    value: X
+  - name: DD_TRACE_PROPAGATION_STYLE
+    value: X
 
 image:
   repository: us-west1-docker.pkg.dev/meetversetest/meetverse/api
@@ -132,5 +143,5 @@ mongodb:
     nameOverride: "mongodb"
   auth:
     usernames: ["mongo"]
-    passwords: ["mongo"]
     databases: ["meetverse"]
+    existingSecret: meetverse
