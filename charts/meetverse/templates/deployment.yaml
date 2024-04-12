@@ -48,7 +48,7 @@ spec:
               value: {{ .host }}
             {{- end }}
             - name: OPENAI_KEY
-              value: {{ .Values.openAPI.key }}
+              value: {{ .Values.openAI.key }}
             - name: GOOGLE_CLIENT_ID
               value: {{ .Values.google.client_id }}
             - name: GOOGLE_PROJECT_ID

@@ -4,14 +4,14 @@
 
 replicaCount: 1
 
-openAPI:
+openAI:
   key: X
 
 google:
   client_id: X
   project: meetversetest
   secret: X
-  redirect_urls: '["http://localhost:8000/api/oauth2callback","https://meetverse.ai/api/oauth2callback"]'
+  redirect_urls: "[\"http://localhost:8000/api/oauth2callback\",\"https://meetverse.ai/api/oauth2callback\"]"
   refresh_token: X
 
 gmail:
