@@ -56,7 +56,7 @@ spec:
             - name: GOOGLE_CLIENT_SECRET
               value: {{ .Values.google.secret }}
             - name: GOOGLE_REDIRECT_URIS
-              value: {{ .Values.google.redorect_urls }}
+              value: {{ .Values.google.redirect_urls }}
             - name: GMAIL_REFRESH_TOKEN
               value: {{ .Values.gmail.refresh_token }}
             - name: GMAIL_CLIENT_ID
