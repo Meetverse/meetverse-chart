@@ -11,7 +11,7 @@ google:
   client_id: X
   project: meetversetest
   secret: X
-  redirect_urls: ""
+  redirect_urls: "[\"http://localhost:8000\"]"
   refresh_token: X
 
 gmail:
