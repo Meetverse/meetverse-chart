@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: {{ include "meetverse.fullname" . }}-fe
   labels:
-    {{- include "meetverse.labels" . | nindent 4 }}
+    {{- include "meetverse.labels-fe" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -12,5 +12,4 @@ spec:
       protocol: TCP
       name: http
   selector:
-    app.kubernetes.io/name: {{ include "meetverse.name" . }}-fe
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    {{- include "meetverse.selectorLabels-fe" . | nindent 4 }}

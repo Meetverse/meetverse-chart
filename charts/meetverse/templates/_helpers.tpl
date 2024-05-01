@@ -43,6 +43,26 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*
+Frontend labels
+*/}}
+{{- define "meetverse.labels-fe" -}}
+helm.sh/chart: {{ include "meetverse.chart" . }}
+{{ include "meetverse.selectorLabels-fe" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{/*
+Selector labels Frontend
+*/}}
+{{- define "meetverse.selectorLabels-fe" -}}
+app.kubernetes.io/name: {{ include "meetverse.name" . }}-fe
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+
+{{/*
 Selector labels
 */}}
 {{- define "meetverse.selectorLabels" -}}

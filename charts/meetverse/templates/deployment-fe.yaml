@@ -3,14 +3,14 @@ kind: Deployment
 metadata:
   name: {{ include "meetverse.fullname" . }}-fe
   labels:
-    {{- include "meetverse.labels" . | nindent 4 }}
+    {{- include "meetverse.labels-fe" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "meetverse.selectorLabels" . | nindent 6 }}
+      {{- include "meetverse.selectorLabels-fe" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -18,7 +18,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "meetverse.labels" . | nindent 8 }}
+        {{- include "meetverse.labels-fe" . | nindent 8 }}
         {{- with .Values.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
