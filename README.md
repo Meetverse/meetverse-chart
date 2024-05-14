@@ -27,7 +27,7 @@ helm delete meetverse
 ```
 
 ## Configuration
-The following table lists the configurable parameters of the Meetverse chart and their default values.
+The following table lists the required configurable parameters of the Meetverse chart and their default values.
 
 
 | Parameter                     | Description                                   | Default                                                    |
@@ -51,11 +51,30 @@ The following table lists the configurable parameters of the Meetverse chart and
 
 ### Dependencies
 
-- MongoDB (Bitnami MongoDB chart)
+- [MongoDB (Bitnami MongoDB chart)](https://github.com/bitnami/charts/tree/main/bitnami/mongodb)
 
-- Qdrant
+- [Qdrant](https://github.com/qdrant/qdrant-helm)
 
-For more information on configuring the dependencies, refer to their respective Helm chart documentation.
+For more information on configuring the dependencies, refer to their respective Helm chart documentation. 
+
+To use values from those charts just refer to them in the values as `mongodb` and `qdrant` respectivelly, eg:
+
+```
+mongodb:
+  service:
+    nameOverride: "mongodb"
+  auth:
+    usernames: ["mongo"]
+    databases: ["meetverse"]
+    existingSecret: meetverse
+```
+
+Those values will be used by the mongoDB chart.
+
+This chart, using its default values, is expecting a nginx ingress controller and a cert-manager bot to be available in the cluster (one for routing, the 
+other for automating ssl cert provisioning). You can use any other tool for those needs, just remember to customize the values before doing so.
+
+
 
 ### Customizing the Chart Before Installing
 
@@ -67,15 +86,23 @@ helm show values meetverse/meetverse > values.yaml
 helm install meetverse meetverse/meetverse -f values.yaml
 ```
 
-### Persistence
-The MongoDB dependency requires a PersistentVolume to store data. The volume needs to be created beforehand or dynamic volume provisioning should be enabled.
-
-
 ## Updating chart
 
-This is an automated chart repo. It provides the pkgs for charts using github pages and chart releaser.
+This is an automated chart repo. It provides the pkgs for charts using github pages and [chart releaser](https://github.com/helm/chart-releaser).
 
 To create a new chart version, just make the changes you want on the chart code, then bump the version in ``Chart.yaml`` and push the changes to ``main`` branch. 
 This will trigger the automation to create a new version of the chart and make it available for others to use.
 
 This chart repo right now is PUBLIC, so take care to not provide any secrets in it, and rely on user provided secrets/variables.
+
+You can of course do all the steps manully and push it to chart repo yourself, for this please check the [official helm docs](https://helm.sh/docs/).
+
+## Adding new charts
+
+Note that this repo is ready to host multiple charts, if you want to add a new one, just add it to `charts` folder. Once the chart is pushed, the automation will take care
+of packaging and releasing it.
+
+## GCP Market Place
+
+One of the possible ways to deploy applications using GCP Marketplace is to deliver helm charts for the customer cluster. This repo contains all needed files and 
+routines for that, one will just need to add the specific GCP files in this chart, and it will be ready to be used.
