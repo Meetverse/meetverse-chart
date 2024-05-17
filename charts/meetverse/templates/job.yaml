@@ -9,6 +9,8 @@ metadata:
     "helm.sh/hook": post-install
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
+  backoffLimit: 10
+  activeDeadlineSeconds: 60
   template:
     metadata:
       name: "{{ .Release.Name }}-create-config"
@@ -20,8 +22,14 @@ spec:
     spec:
       restartPolicy: Never
       containers:
-        - name: atlas-migrate
+        - name: migrate
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          livenessProbe: # Check if healthy
+            exec:
+              command:
+                - echo "WAITED"
+            initialDelaySeconds: 60
+            periodSeconds: 15
           env: {{ toYaml .Values.env | nindent 12 }}
             {{- with (first .Values.ingress.hosts) }}
             - name: URI
@@ -29,10 +37,4 @@ spec:
             {{- end }}
             - name: RUN_MODE
               value: load_data
-          args:
-            - migrate
-            - apply
-            - -u
-            - {{ .Values.dburl }}
-            - --dir
-            - file:///src/
+
