@@ -5,10 +5,9 @@ metadata:
   name: "{{ .Release.Name }}-migrate-{{ now | unixEpoch }}"
   labels:
     helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
-  annotations:
-    "helm.sh/hook": post-install
-    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
+  activeDeadlineSeconds: 120
+  backoffLimit: 10
   template:
     metadata:
       name: "{{ .Release.Name }}-create-config"
@@ -22,6 +21,15 @@ spec:
       containers:
         - name: migrate
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          livenessProbe:
+            exec:
+              command:
+                - echo "OK"
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 1
+            successThreshold: 1
+            failureThreshold: 3
           env: {{ toYaml .Values.env | nindent 12 }}
             {{- with (first .Values.ingress.hosts) }}
             - name: URI
