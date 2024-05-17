@@ -7,9 +7,8 @@ metadata:
     helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
   annotations:
     "helm.sh/hook": post-install
-    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded,hook-failed
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
-  backoffLimit: 10
   template:
     metadata:
       name: "{{ .Release.Name }}-create-config"
@@ -23,12 +22,6 @@ spec:
       containers:
         - name: migrate
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          livenessProbe: # Check if healthy
-            exec:
-              command:
-                - echo "WAITED"
-            initialDelaySeconds: 60
-            periodSeconds: 15
           env: {{ toYaml .Values.env | nindent 12 }}
             {{- with (first .Values.ingress.hosts) }}
             - name: URI
