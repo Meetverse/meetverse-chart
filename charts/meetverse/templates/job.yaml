@@ -1,0 +1,38 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  # job name should include a unix timestamp to make sure it's unique
+  name: "{{ .Release.Name }}-migrate-{{ now | unixEpoch }}"
+  labels:
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    metadata:
+      name: "{{ .Release.Name }}-create-config"
+      labels:
+        {{- include "meetverse.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: atlas-migrate
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          env: {{ toYaml .Values.env | nindent 12 }}
+            {{- with (first .Values.ingress.hosts) }}
+            - name: URI
+              value: {{ .host }}
+            {{- end }}
+            - name: RUN_MODE
+              value: load_data
+          args:
+            - migrate
+            - apply
+            - -u
+            - {{ .Values.dburl }}
+            - --dir
+            - file:///src/
