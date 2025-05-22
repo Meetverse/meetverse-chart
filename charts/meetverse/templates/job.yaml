@@ -33,7 +33,7 @@ spec:
           env: {{ toYaml .Values.env | nindent 12 }}
             {{- with (first .Values.ingress.hosts) }}
             - name: URI
-              value: {{ .host }}
+              value: {{ .host | quote }}
             {{- end }}
             - name: RUN_MODE
               value: load_data
