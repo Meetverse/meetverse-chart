@@ -31,10 +31,6 @@ spec:
             successThreshold: 1
             failureThreshold: 3
           env: {{ toYaml .Values.env | nindent 12 }}
-            {{- with (first .Values.ingress.hosts) }}
-            - name: URI
-              value: {{ .host }}
-            {{- end }}
             - name: RUN_MODE
               value: load_data
 
