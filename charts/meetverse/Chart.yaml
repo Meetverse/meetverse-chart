@@ -16,7 +16,7 @@ type: application
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
 
-version: 0.4.15
+version: 0.4.16
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
@@ -30,5 +30,5 @@ dependencies:
     repository: https://qdrant.github.io/qdrant-helm
 
   - name: mongodb
-    version: 16.5.45
+    version: 15.1.2
     repository: https://charts.bitnami.com/bitnami
