@@ -1,16 +1,21 @@
+{{- $base := (default .Release.Name .Values.fullnameOverride) | trunc 57 | trimSuffix "-" -}}
+{{- $name := printf "%s-fe" $base -}}
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "meetverse.fullname" . }}-fe
+  name: {{ $name }}
   labels:
-    {{- include "meetverse.labels-fe" . | nindent 4 }}
+    app.kubernetes.io/name: {{ $name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "meetverse.selectorLabels-fe" . | nindent 6 }}
+      app.kubernetes.io/name: {{ $name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -18,7 +23,8 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "meetverse.labels-fe" . | nindent 8 }}
+        app.kubernetes.io/name: {{ $name }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
         {{- with .Values.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
