@@ -1,3 +1,5 @@
+{{- $fullname := include "meetverse.fullname" . -}}
+{{- $fullnameFe := printf "%s-fe" $fullname -}}
 {{- if .Values.ingress.enabled -}}
 {{- $base := (default .Release.Name .Values.fullnameOverride) | trunc 63 | trimSuffix "-" -}}
 {{- $fe := printf "%s-fe" $base -}}
@@ -52,11 +54,11 @@ spec:
             backend:
               {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
               service:
-                name: {{ if ne .path "/" }}{{ $base }}{{ else }}{{ $fe }}{{ end }}
+                name: {{ if ne .path "/" }}{{ $fullname }}{{ else }}{{ $fullnameFe }}{{ end }}
                 port:
                   number: {{ if ne .path "/" }}{{ $svcPort }}{{ else }}{{ $svcPortFe }}{{ end }}
               {{- else }}
-              serviceName: {{ if ne .path "/" }}{{ $base }}{{ else }}{{ $fe }}{{ end }}
+              serviceName: {{ if ne .path "/" }}{{ $fullname }}{{ else }}{{ $fullnameFe }}{{ end }}
               servicePort: {{ if ne .path "/" }}{{ $svcPort }}{{ else }}{{ $svcPortFe }}{{ end }}
               {{- end }}
           {{- end }}
