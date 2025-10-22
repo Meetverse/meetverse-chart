@@ -3,6 +3,16 @@ entries:
   meetverse:
   - apiVersion: v2
     appVersion: 1.16.0
+    created: "2025-10-22T14:19:03.480303682Z"
+    description: A Helm chart for Kubernetes
+    digest: 7c494e5d2d4f41112d266f0fb8849830e68ea877dc63a6cf9d46c1285c1e32b5
+    name: meetverse
+    type: application
+    urls:
+    - https://github.com/Meetverse/meetverse-chart/releases/download/meetverse-0.4.20/meetverse-0.4.20.tgz
+    version: 0.4.20
+  - apiVersion: v2
+    appVersion: 1.16.0
     created: "2025-10-22T13:54:27.137722819Z"
     description: A Helm chart for Kubernetes
     digest: 6b2b898afe458090b08fd51f120dad022340adaa65bc3fcbe696faf7a84fddd3
@@ -579,4 +589,4 @@ entries:
     urls:
     - https://github.com/Meetverse/meetverse-chart/releases/download/meetverse-0.2.5/meetverse-0.2.5.tgz
     version: 0.2.5
-generated: "2025-10-22T13:54:27.13802775Z"
+generated: "2025-10-22T14:19:03.480684017Z"
