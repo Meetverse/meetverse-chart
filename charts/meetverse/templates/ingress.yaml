@@ -52,12 +52,12 @@ spec:
             backend:
               {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
               service:
-                name: {{ if ne .path "/" }}{{ printf "%s-meetverse" $base }}{{ else }}{{ printf "%s-meetverse-fe" $base }}{{ end }}
+                name: {{ if ne .path "/" }}{{ $base }}{{ else }}{{ $fe }}{{ end }}
                 port:
                   number: {{ if ne .path "/" }}{{ $svcPort }}{{ else }}{{ $svcPortFe }}{{ end }}
               {{- else }}
-                serviceName: {{ if ne .path "/" }}{{ printf "%s-meetverse" $base }}{{ else }}{{ printf "%s-meetverse-fe" $base }}{{ end }}
-                servicePort: {{ if ne .path "/" }}{{ $svcPort }}{{ else }}{{ $svcPortFe }}{{ end }}
+              serviceName: {{ if ne .path "/" }}{{ $base }}{{ else }}{{ $fe }}{{ end }}
+              servicePort: {{ if ne .path "/" }}{{ $svcPort }}{{ else }}{{ $svcPortFe }}{{ end }}
               {{- end }}
           {{- end }}
     {{- end }}
