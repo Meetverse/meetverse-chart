@@ -168,3 +168,16 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+mongodb:
+  image:
+    registry: us-west1-docker.pkg.dev
+    repository: marzoai-456417/marzoai/mongodb
+    tag: 7.0.14-debian-12-r0
+    pullPolicy: IfNotPresent
+  service:
+    nameOverride: "mongodb"
+  auth:
+    usernames: ["mongo"]
+    databases: ["meetverse"]
+    existingSecret: meetverse

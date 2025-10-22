@@ -54,15 +54,19 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
-{{/* Selector labels Frontend */}}
+{{/*
+Selector labels Frontend
+*/}}
 {{- define "meetverse.selectorLabels-fe" -}}
-app.kubernetes.io/name: {{ include "meetverse.fullname" . }}-fe
+app.kubernetes.io/name: {{ include "meetverse.name" . }}-fe
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
-{{/* Selector labels */}}
+{{/*
+Selector labels
+*/}}
 {{- define "meetverse.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "meetverse.fullname" . }}
+app.kubernetes.io/name: {{ include "meetverse.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 

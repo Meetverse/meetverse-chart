@@ -1,20 +1,16 @@
-{{- $name := (default .Release.Name .Values.fullnameOverride) | trunc 63 | trimSuffix "-" -}}
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ $name }}
+  name: {{ include "meetverse.fullname" . }}
   labels:
-    app.kubernetes.io/name: {{ $name }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    {{- include "meetverse.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ $name }}
-      app.kubernetes.io/instance: {{ .Release.Name }}
+      {{- include "meetverse.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -22,8 +18,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        app.kubernetes.io/name: {{ $name }}
-        app.kubernetes.io/instance: {{ .Release.Name }}
+        {{- include "meetverse.labels" . | nindent 8 }}
         {{- with .Values.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}

@@ -1,8 +1,5 @@
-{{- $fullname := include "meetverse.fullname" . -}}
-{{- $fullnameFe := printf "%s-fe" $fullname -}}
 {{- if .Values.ingress.enabled -}}
-{{- $base := (default .Release.Name .Values.fullnameOverride) | trunc 63 | trimSuffix "-" -}}
-{{- $fe := printf "%s-fe" $base -}}
+{{- $fullName := include "meetverse.fullname" . -}}
 {{- $svcPort := .Values.service.port -}}
 {{- $svcPortFe := .Values.frontend.service.port -}}
 {{- if and .Values.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
@@ -19,10 +16,9 @@ apiVersion: extensions/v1beta1
 {{- end }}
 kind: Ingress
 metadata:
-  name: {{ $base }}
+  name: {{ $fullName }}
   labels:
-    app.kubernetes.io/name: {{ $base }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    {{- include "meetverse.labels" . | nindent 4 }}
   {{- with .Values.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -54,12 +50,12 @@ spec:
             backend:
               {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
               service:
-                name: {{ if ne .path "/" }}{{ $fullname }}{{ else }}{{ $fullnameFe }}{{ end }}
+                name: {{ if ne .path "/" }}{{ $fullName }}{{ else }}{{ $fullName }}-fe{{ end }}
                 port:
                   number: {{ if ne .path "/" }}{{ $svcPort }}{{ else }}{{ $svcPortFe }}{{ end }}
               {{- else }}
-              serviceName: {{ if ne .path "/" }}{{ $fullname }}{{ else }}{{ $fullnameFe }}{{ end }}
-              servicePort: {{ if ne .path "/" }}{{ $svcPort }}{{ else }}{{ $svcPortFe }}{{ end }}
+              serviceName: {{ $fullName }}
+              servicePort: {{ $svcPort }}
               {{- end }}
           {{- end }}
     {{- end }}
